@@ -17,3 +17,7 @@
 .btn-final {
   @apply bg-green-500 shadow-md rounded-lg w-full h-12 text-white font-medium text-xl flex justify-center items-center m-1 transition-all active:scale-90 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500;
 }
+
+.list-item {
+  @apply bg-gray-200 px-4 py-2 rounded mb-3 cursor-pointer hover:bg-gray-700 hover:text-white;
+}

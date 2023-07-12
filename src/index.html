@@ -35,6 +35,14 @@
         <div class="flex mt-3">
           <button
             type="button"
+            class="btn btn-sm btn-dark ms-3 me-auto"
+            data-bs-toggle="modal"
+            data-bs-target="#variableModal"
+          >
+            Variables
+          </button>
+          <button
+            type="button"
             class="btn btn-sm btn-dark ms-auto me-3"
             data-bs-toggle="modal"
             data-bs-target="#exampleModal"
@@ -57,7 +65,6 @@
             placeholder="Result"
             class="text-black font-bold text-3xl outline-none w-full text-right"
             name="present"
-            readonly
           />
         </div>
         <div class="w-auto m-1 h-auto mb-2">
@@ -65,7 +72,33 @@
             <input
               type="button"
               class="btn-set"
+              value="DEL"
+              onclick="present.value = present.value.slice(0, -1)"
+            />
+            <input
+              type="button"
+              class="btn-set"
               value="C"
+              onclick="present.value = ''"
+            />
+            <input
+              type="button"
+              class="btn-highlighted"
+              value="e"
+              onclick="present.value += 'e'"
+            />
+            <input
+              type="button"
+              class="btn-highlighted"
+              value="π"
+              onclick="present.value += 'π'"
+            />
+          </div>
+          <div class="m-2 flex justify-between">
+            <input
+              type="button"
+              class="btn-set"
+              value="AC"
               onclick="present.value = ''; past.value = ''"
             />
             <input
@@ -220,10 +253,95 @@
             <div class="w-20 h-1 bg-gray-100 rounded-l-xl rounded-r-xl"></div>
           </div>
         </div>
+
+        <!-- Variable Modal -->
+        <div
+          class="modal fade"
+          id="variableModal"
+          tabindex="-1"
+          aria-labelledby="variableModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title font-bold" id="variableModalLabel">
+                  Variables
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="flex justify-end">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-dark ms-auto me-3 mb-4"
+                    data-bs-target="#addVariableModal"
+                    data-bs-toggle="modal"
+                  >
+                    Add Variable
+                  </button>
+                </div>
+                <ol
+                  id="variablesContainer"
+                  class="list-group list-group-numbered"
+                ></ol>
+              </div>
+            </div>
+          </div>
+        </div>    
       </form>
     </div>
 
-    <!-- Modal -->
+    <!-- Add Variable Modal -->
+    <div
+      class="modal fade"
+      id="addVariableModal"
+      tabindex="-1"
+      aria-labelledby="addVariableModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title font-bold" id="addVariableModalLabel">
+              Add Variable
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form onsubmit="addVariable(event)">
+              <input
+                id="variableName"
+                type="text"
+                class="form-control form-control-sm  mb-3"
+                placeholder="Enter Variable Name"
+              />
+              <input
+                id="variableValue"  
+                type="number"
+                class="form-control form-control-sm mb-3"
+                placeholder="Enter Variable Value"
+              />
+              <div class="flex justify-end">
+                <button type="submit" class="btn btn-dark btn-sm">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
     <div
       class="modal fade"
       id="exampleModal"
@@ -234,7 +352,9 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <h5 class="modal-title font-bold" id="exampleModalLabel">
+              History
+            </h5>
             <button
               type="button"
               class="btn-close"
@@ -242,16 +362,11 @@
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">...</div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+          <div class="modal-body">
+            <ol
+              id="myArrayContainer"
+              class="list-group list-group-numbered"
+            ></ol>
           </div>
         </div>
       </div>
