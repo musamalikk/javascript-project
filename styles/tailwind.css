@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn-simple {
+  @apply bg-gray-200 shadow-md rounded-lg w-full h-12 text-black font-medium flex justify-center items-center m-1 transition-all active:scale-90 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500;
+}
+
+.btn-highlighted {
+  @apply bg-yellow-500 shadow-md rounded-lg w-full h-12 text-white font-medium text-xl flex justify-center items-center m-1 transition-all active:scale-90 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500;
+}
+
+.btn-set {
+  @apply bg-yellow-100 shadow-md rounded-lg w-full h-12 text-yellow-600 font-medium flex justify-center items-center m-1 transition-all active:scale-90 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500;
+}
+
+.btn-final {
+  @apply bg-green-500 shadow-md rounded-lg w-full h-12 text-white font-medium text-xl flex justify-center items-center m-1 transition-all active:scale-90 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500;
+}
