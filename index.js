@@ -218,7 +218,7 @@ const result = () => {
   // console.log("new value " + newValue);
 
   const multiplicationOperator = addMultiplicationOperator(newValue);
-  console.log("new evaluated value " + multiplicationOperator);
+  // console.log("new evaluated value " + multiplicationOperator);
 
   try {
     const evaluatedValue = eval(multiplicationOperator);
@@ -274,10 +274,10 @@ const addVariable = (e) => {
       // );
       // modal.hide();
 
+      // console.log(name, value);
       name = "";
       value = "";
 
-      console.log(name, value);
       return alert("Variable has been added!");
     }
   } catch (error) {
