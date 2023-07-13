@@ -8,22 +8,6 @@ setInterval(
   1000
 );
 
-const FontCheck = () => {
-  var presentInput = document.getElementById("present");
-
-  const adjustFontSize = () => {
-    var maxWidth = presentInput.clientWidth;
-    var fontSize = 3; // Starting font size
-
-    while (presentInput.scrollWidth > maxWidth) {
-      fontSize -= 0.1;
-      presentInput.style.fontSize = fontSize + "rem";
-    }
-  };
-
-  window.addEventListener("resize", adjustFontSize);
-};
-
 const parenthesisCheck = (str) => {
   const stack = [];
 
@@ -42,21 +26,17 @@ const parenthesisCheck = (str) => {
 };
 
 const trigonometricCheck = (str) => {
-  let value = "";
+  let value = str;
   if (str.includes("sin")) {
-    value = str.replaceAll("sin", "Math.sin");
+    value = value.replaceAll("sin", "Math.sin");
   }
 
   if (str.includes("cos")) {
-    value = str.replaceAll("cos", "Math.cos");
+    value = value.replaceAll("cos", "Math.cos");
   }
 
   if (str.includes("tan")) {
-    value = str.replaceAll("tan", "Math.tan");
-  }
-
-  if (value === "") {
-    return str;
+    value = value.replaceAll("tan", "Math.tan");
   }
 
   return value;
@@ -186,11 +166,17 @@ const populateVariables = () => {
 };
 
 const addMultiplicationOperator = (expression) => {
-  var regex = /(\d+)([a-zA-Z\(])/g;
+  // const regex = /(\d+|\))([a-zA-Z\(]|π|tan)|e(π)/g;
+  // expression.replace(regex, "$1*$2");
 
-  var result = expression.replace(regex, "$1*$2");
+  // const regex = /(\d+|\))([a-zA-Z\(]|tan)/g;
+  // return expression.replace(regex, "$1*$2");
 
-  return result;
+  const regex = /(?<=\d|\))(?=(?:sin|cos|tan)\()/g;
+  return expression.replace(regex, "*");
+
+  // const eRegex = /e(?!$|\*)/g;
+  // return expression.replace(eRegex, "e*");
 };
 
 populateHistory();
@@ -215,22 +201,29 @@ const result = () => {
 
   if (!value) return alert("Kindly Enter Some Expression to Proceed!");
 
-  const newValue = expressionChecks(value);
-  // console.log("value " + value);
+  // const multiplicationOperator = addMultiplicationOperator(
+  //   value.replaceAll("eπ", "e*π")
+  // );
+  // console.log("Multiplicator Operator value " + multiplicationOperator);
+
+  // const newValue = expressionChecks(multiplicationOperator);
+  const newValue = value;
+  console.log("value " + newValue);
   // console.log("new value " + newValue);
 
-  const multiplicationOperator = addMultiplicationOperator(newValue);
-  // console.log("new evaluated value " + multiplicationOperator);
-
   try {
-    const evaluatedValue = eval(multiplicationOperator);
+    // const evaluatedValue = eval(newValue);
+    // console.log(
+    //   "spaces expression " +
+    //     newValue.replace("/(d)(+-|[/*+-])(?=d)/g", "$1 $2 ")
+    // );
+    const resultValue = new InfixEvaluator(newValue).evaluate();
+    // Math.abs(evaluatedValue) % 1 !== 0
+    //   ? (eval(evaluatedValue) / 1).toFixed(4)
+    //   : eval(evaluatedValue);
 
-    const resultValue =
-      Math.abs(evaluatedValue) % 1 !== 0
-        ? (eval(evaluatedValue) / 1).toFixed(4)
-        : eval(evaluatedValue);
+    console.log("eval value " + resultValue);
 
-    // console.log("eval value " + resultValue);
     document.getElementById("past").value = value;
     document.getElementById("present").value = resultValue;
 
@@ -286,3 +279,142 @@ const addVariable = (e) => {
     console.log(error);
   }
 };
+
+// class ----------------------------------------------------------------------------------------------------
+
+class InfixEvaluator {
+  constructor(expression) {
+    this.expression = expression;
+    this.precedence = {
+      "(": 1,
+      ")": 1,
+      "+": 2,
+      "-": 2,
+      "*": 3,
+      "^": 4,
+    };
+  }
+
+  applyOperator(operators, operands) {
+    const operator = operators.pop();
+    const operand2 = operands.pop();
+    const operand1 = operands.pop();
+
+    let result;
+    switch (operator) {
+      case "^":
+        result = Math.pow(operand1, operand2);
+        break;
+      case "*":
+        result = operand1 * operand2;
+        break;
+      case "/":
+        result = operand1 / operand2;
+        break;
+      case "+":
+        result = operand1 + operand2;
+        break;
+      case "-":
+        result = operand1 - operand2;
+        break;
+    }
+
+    operands.push(result);
+  }
+
+  // parse = () => {
+  //   return this.expression
+  //     .replace(/[^\d+\-\/*x()>^=]/g, " ")
+  //     .replace(/\s*(\D+)\s*/g, " $1 ") // add spaces
+  //     .replace(/ +/g, " ") // ensure no duplicate spaces
+  //     .replace(/\( /g, "(") // remove space after (
+  //     .replace(/ \)/g, ")"); // remove space before );
+  //   // const spacedArgs = argsWithOnlyMath
+  //   //   .replace(/\s*(\D+)\s*/g, " $1 ") // add spaces
+  //   //   .replace(/ +/g, " ") // ensure no duplicate spaces
+  //   //   .replace(/\( /g, "(") // remove space after (
+  //   //   .replace(/ \)/g, ")"); // remove space before )
+  //   // console.log(spacedArgs);
+  // };
+
+  parse = () => {
+    return this.expression
+      .replace(/[^\d+\-/*x()>\^=sin|cos|tan|sqrt|π|e]/g, " ")
+      .replace(/\s*(\D+)\s*/g, " $1 ") // add spaces
+      .replace(/ +/g, " ") // ensure no duplicate spaces
+      .replace(/\( /g, "(") // remove space after (
+      .replace(/ \)/g, ")"); // remove space before );
+  };
+
+  evaluate() {
+    this.expression = this.replaceExpressions();
+    // this.expression = this.parse();
+    console.log("parse expression", this.expression);
+
+    const tokens = this.expression.split(" ");
+    const operators = [];
+    const operands = [];
+
+    tokens.forEach((token) => {
+      if (!isNaN(parseFloat(token))) {
+        operands.push(parseFloat(token));
+      } else if (this.precedence[token]) {
+        while (
+          operators.length > 0 &&
+          operators[operators.length - 1] !== "(" &&
+          this.precedence[operators[operators.length - 1]] >=
+            this.precedence[token]
+        ) {
+          this.applyOperator(operators, operands);
+        }
+        operators.push(token);
+      } else if (token === "(") {
+        operators.push(token);
+      } else if (token === ")") {
+        while (
+          operators.length > 0 &&
+          operators[operators.length - 1] !== "("
+        ) {
+          this.applyOperator(operators, operands);
+        }
+        operators.pop(); // Discard the "("
+      }
+    });
+
+    while (operators.length > 0) {
+      this.applyOperator(operators, operands);
+    }
+
+    return operands[0];
+  }
+
+  replaceExpressions = () => {
+    const trigonometricPattern = /(sin|cos|tan)\(([^)]+)\)/g;
+    const squareRootPattern = /√\((\d+(?:\.\d+)?)\)/g;
+
+    const replacedExpression = this.expression
+      .replace(trigonometricPattern, (match, func, angle) => {
+        const angleInDegrees = parseFloat(angle);
+        const angleInRadians = (angleInDegrees * Math.PI) / 180;
+
+        switch (func) {
+          case "sin":
+            return Math.sin(angleInRadians).toFixed(4);
+          case "cos":
+            return Math.cos(angleInRadians).toFixed(4);
+          case "tan":
+            return Math.tan(angleInRadians).toFixed(4);
+          default:
+            return match;
+        }
+      })
+      .replace(squareRootPattern, (match, num) => {
+        const evaluatedValue = Math.sqrt(parseFloat(num));
+        return evaluatedValue.toFixed(4);
+      })
+      .replaceAll("e", Math.E.toFixed(4))
+      .replaceAll("π", Math.PI.toFixed(4));
+
+    return replacedExpression;
+  };
+}
