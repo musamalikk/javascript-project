@@ -90,10 +90,11 @@ const squareRootCheck = (str) => {
 
 const exponentialConstantCheck = (str) => {
   let value = "";
-  if (str === "e") {
+  // if (str === "e") {
+  //   value = str.replaceAll("e", "Math.E");
+  // } else
+  if (str.includes("e")) {
     value = str.replaceAll("e", "Math.E");
-  } else if (str.includes("e")) {
-    value = str.replaceAll("e", "Math.E**");
   }
 
   if (value === "") {
@@ -105,10 +106,11 @@ const exponentialConstantCheck = (str) => {
 
 const pieCheck = (str) => {
   let value = "";
-  if (str === "π") {
+  // if (str === "π") {
+  //   value = str.replaceAll("π", "Math.PI");
+  // } else
+  if (str.includes("π")) {
     value = str.replaceAll("π", "Math.PI");
-  } else if (str.includes("π")) {
-    value = str.replaceAll("π", "Math.PI *");
   }
 
   if (value === "") {
