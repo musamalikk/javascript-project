@@ -1,3 +1,6 @@
+const history = [];
+const variables = [];
+
 setInterval(
   () =>
     (document.getElementById("time").innerHTML =
@@ -129,16 +132,41 @@ const variableListener = (element) => () => {
   document.getElementById("present").value += element.value;
 };
 
+const historyRemoveListener = (element, container, li) => () => {
+  const index = history.indexOf(element);
+  if (index > -1) {
+    history.splice(index, 1);
+  }
+  container.removeChild(li);
+};
+
 const populateHistory = () => {
   const container = document.getElementById("myArrayContainer");
   container.innerHTML = ""; // Clear the existing content
 
   history.forEach((element) => {
-    var li = document.createElement("li");
-    li.textContent = element;
-    li.classList.add("list-item");
-    li.onclick = historyListener(element);
+    const li = document.createElement("li");
+    // li.textContent = element;
+    li.classList.add("list-item", "flex", "justify-start", "items-center");
+
+    const p = document.createElement("p");
+    p.classList.add("mb-0");
+
+    const span = document.createElement("span");
+    span.classList.add("btn-close", "btn-sm", "text-danger", "ms-auto");
+
+    p.textContent = element;
+    // span.textContent = "x";
+
+    p.onclick = historyListener(element);
+    span.onclick = historyRemoveListener(element, container, li);
+
+    li.appendChild(p);
+    li.appendChild(span);
+
     container.appendChild(li);
+
+    // console.log(history);
   });
 };
 
@@ -163,9 +191,6 @@ const addMultiplicationOperator = (expression) => {
   return result;
 };
 
-const history = [];
-const variables = [];
-
 populateHistory();
 populateVariables();
 
@@ -189,8 +214,8 @@ const result = () => {
   if (!value) return alert("Kindly Enter Some Expression to Proceed!");
 
   const newValue = expressionChecks(value);
-  console.log("value " + value);
-  console.log("new value " + newValue);
+  // console.log("value " + value);
+  // console.log("new value " + newValue);
 
   const multiplicationOperator = addMultiplicationOperator(newValue);
   console.log("new evaluated value " + multiplicationOperator);
@@ -209,7 +234,7 @@ const result = () => {
 
     history.push(value);
     // console.log("history", history);
-    console.log("variables", variables);
+    // console.log("variables", variables);
 
     populateHistory();
     populateVariables();
