@@ -179,6 +179,13 @@ const result = () => {
   if (value.includes("/0"))
     return alert("Arithmetic Exception: Division by 0 Error!");
 
+  if (value.includes("//"))
+    return alert(
+      "Enter the Correct Expression, Operators cannot be repeated consectively!"
+    );
+
+  if (value.includes("√(-")) return alert("Iota √(-1) Exception!");
+
   if (!value) return alert("Kindly Enter Some Expression to Proceed!");
 
   const newValue = expressionChecks(value);
