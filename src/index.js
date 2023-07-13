@@ -41,15 +41,15 @@ const parenthesisCheck = (str) => {
 const trigonometricCheck = (str) => {
   let value = "";
   if (str.includes("sin")) {
-    value = str.replace("sin", "Math.sin");
+    value = str.replaceAll("sin", "Math.sin");
   }
 
   if (str.includes("cos")) {
-    value = str.replace("cos", "Math.cos");
+    value = str.replaceAll("cos", "Math.cos");
   }
 
   if (str.includes("tan")) {
-    value = str.replace("tan", "Math.tan");
+    value = str.replaceAll("tan", "Math.tan");
   }
 
   if (value === "") {
@@ -62,7 +62,7 @@ const trigonometricCheck = (str) => {
 const exponentCheck = (str) => {
   let value = "";
   if (str.includes("^")) {
-    value = str.replace("^", "**");
+    value = str.replaceAll("^", "**");
   }
 
   if (value === "") {
@@ -75,7 +75,37 @@ const exponentCheck = (str) => {
 const squareRootCheck = (str) => {
   let value = "";
   if (str.includes("√")) {
-    value = str.replace("√", "Math.sqrt");
+    value = str.replaceAll("√", "Math.sqrt");
+  }
+
+  if (value === "") {
+    return str;
+  }
+
+  return value;
+};
+
+const exponentialConstantCheck = (str) => {
+  let value = "";
+  if (str === "e") {
+    value = str.replaceAll("e", "Math.E");
+  } else if (str.includes("e")) {
+    value = str.replaceAll("e", "Math.E**");
+  }
+
+  if (value === "") {
+    return str;
+  }
+
+  return value;
+};
+
+const pieCheck = (str) => {
+  let value = "";
+  if (str === "π") {
+    value = str.replaceAll("π", "Math.PI");
+  } else if (str.includes("π")) {
+    value = str.replaceAll("π", "Math.PI *");
   }
 
   if (value === "") {
@@ -86,10 +116,58 @@ const squareRootCheck = (str) => {
 };
 
 const expressionChecks = (str) => {
-  return trigonometricCheck(exponentCheck(squareRootCheck(str)));
+  return trigonometricCheck(
+    exponentCheck(squareRootCheck(exponentialConstantCheck(pieCheck(str))))
+  );
+};
+
+const historyListener = (element) => () => {
+  document.getElementById("present").value = element;
+};
+
+const variableListener = (element) => () => {
+  document.getElementById("present").value += element.value;
+};
+
+const populateHistory = () => {
+  const container = document.getElementById("myArrayContainer");
+  container.innerHTML = ""; // Clear the existing content
+
+  history.forEach((element) => {
+    var li = document.createElement("li");
+    li.textContent = element;
+    li.classList.add("list-item");
+    li.onclick = historyListener(element);
+    container.appendChild(li);
+  });
+};
+
+const populateVariables = () => {
+  const container = document.getElementById("variablesContainer");
+  container.innerHTML = ""; // Clear the existing content
+
+  variables.forEach((element) => {
+    var li = document.createElement("li");
+    li.textContent = element.name + "  -->  " + element.value;
+    li.classList.add("list-item");
+    li.onclick = variableListener(element);
+    container.appendChild(li);
+  });
+};
+
+const addMultiplicationOperator = (expression) => {
+  var regex = /(\d+)([a-zA-Z\(])/g;
+
+  var result = expression.replace(regex, "$1*$2");
+
+  return result;
 };
 
 const history = [];
+const variables = [];
+
+populateHistory();
+populateVariables();
 
 const result = () => {
   const value = document.getElementById("present").value;
@@ -98,21 +176,79 @@ const result = () => {
     return alert("Add Proper Parenthesis!");
   }
 
-  // const newValue = value.replace("tan(", "Math.tan(");
-  // const newValue = trigonometricCheck(value);
+  if (value.includes("/0"))
+    return alert("Arithmetic Exception: Division by 0 Error!");
+
+  if (!value) return alert("Kindly Enter Some Expression to Proceed!");
+
   const newValue = expressionChecks(value);
   console.log("value " + value);
   console.log("new value " + newValue);
 
-  history.push(newValue);
+  const multiplicationOperator = addMultiplicationOperator(newValue);
+  console.log("new evaluated value " + multiplicationOperator);
 
-  // formattedNumber = (eval(newValue) / 1).toFixed(4);
+  try {
+    const evaluatedValue = eval(multiplicationOperator);
 
-  // const evaluatedValue = (eval(newValue) / 1).toFixed(4);
-  const evaluatedValue = eval(newValue);
-  console.log("eval value " + evaluatedValue);
-  // console.log("parenthesisCheck " + );
-  document.getElementById("past").value = value;
-  document.getElementById("present").value = evaluatedValue;
-  console.log("history", history);
+    const resultValue =
+      Math.abs(evaluatedValue) % 1 !== 0
+        ? (eval(evaluatedValue) / 1).toFixed(4)
+        : eval(evaluatedValue);
+
+    // console.log("eval value " + resultValue);
+    document.getElementById("past").value = value;
+    document.getElementById("present").value = resultValue;
+
+    history.push(value);
+    // console.log("history", history);
+    console.log("variables", variables);
+
+    populateHistory();
+    populateVariables();
+
+    return;
+  } catch (error) {
+    return alert(error.message);
+  }
+};
+
+const addVariable = (e) => {
+  e.preventDefault();
+  let exists = false;
+
+  try {
+    let name = document.getElementById("variableName").value;
+    let value = document.getElementById("variableValue").value;
+
+    variables.forEach((element) => {
+      if (element.name === name) {
+        exists = true;
+      }
+    });
+
+    if (exists) {
+      return alert("Variable Already Exists!");
+    } else {
+      variables.push({
+        name: name,
+        value: value,
+      });
+
+      populateVariables();
+
+      // var modal = new bootstrap.Modal(
+      //   document.getElementById("addVariableModal")
+      // );
+      // modal.hide();
+
+      name = "";
+      value = "";
+
+      console.log(name, value);
+      return alert("Variable has been added!");
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
