@@ -322,33 +322,18 @@ class InfixEvaluator {
     operands.push(result);
   }
 
-  // parse = () => {
-  //   return this.expression
-  //     .replace(/[^\d+\-\/*x()>^=]/g, " ")
-  //     .replace(/\s*(\D+)\s*/g, " $1 ") // add spaces
-  //     .replace(/ +/g, " ") // ensure no duplicate spaces
-  //     .replace(/\( /g, "(") // remove space after (
-  //     .replace(/ \)/g, ")"); // remove space before );
-  //   // const spacedArgs = argsWithOnlyMath
-  //   //   .replace(/\s*(\D+)\s*/g, " $1 ") // add spaces
-  //   //   .replace(/ +/g, " ") // ensure no duplicate spaces
-  //   //   .replace(/\( /g, "(") // remove space after (
-  //   //   .replace(/ \)/g, ")"); // remove space before )
-  //   // console.log(spacedArgs);
-  // };
-
   parse = () => {
-    return this.expression
-      .replace(/[^\d+\-/*x()>\^=sin|cos|tan|sqrt|π|e]/g, " ")
-      .replace(/\s*(\D+)\s*/g, " $1 ") // add spaces
-      .replace(/ +/g, " ") // ensure no duplicate spaces
-      .replace(/\( /g, "(") // remove space after (
-      .replace(/ \)/g, ")"); // remove space before );
+    // return this.expression.replace(
+    //   new RegExp(`[${["*", "-", "+", "/", "^"].join("")}]`, "g"),
+    //   (match) => ` ${match} `
+    // );
+
+    return this.expression.replace(/([\+\-\*\/\^])/g, " $1 ");
   };
 
   evaluate() {
     this.expression = this.replaceExpressions();
-    // this.expression = this.parse();
+    this.expression = this.parse();
     console.log("parse expression", this.expression);
 
     const tokens = this.expression.split(" ");
