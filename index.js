@@ -201,31 +201,21 @@ const result = () => {
 
   if (!value) return alert("Kindly Enter Some Expression to Proceed!");
 
-  // const multiplicationOperator = addMultiplicationOperator(
-  //   value.replaceAll("eπ", "e*π")
-  // );
-  // console.log("Multiplicator Operator value " + multiplicationOperator);
-
-  // const newValue = expressionChecks(multiplicationOperator);
   const newValue = value;
   console.log("value " + newValue);
   // console.log("new value " + newValue);
 
   try {
-    // const evaluatedValue = eval(newValue);
-    // console.log(
-    //   "spaces expression " +
-    //     newValue.replace("/(d)(+-|[/*+-])(?=d)/g", "$1 $2 ")
-    // );
-    const resultValue = new InfixEvaluator(newValue).evaluate();
-    // Math.abs(evaluatedValue) % 1 !== 0
-    //   ? (eval(evaluatedValue) / 1).toFixed(4)
-    //   : eval(evaluatedValue);
-
+    const resultValue = evalInfix(newValue);
     console.log("eval value " + resultValue);
 
+    const end =
+      Math.abs(resultValue) % 1 !== 0
+        ? (eval(resultValue) / 1).toFixed(4)
+        : eval(resultValue);
+
     document.getElementById("past").value = value;
-    document.getElementById("present").value = resultValue;
+    document.getElementById("present").value = end;
 
     history.push(value);
     // console.log("history", history);
@@ -280,126 +270,126 @@ const addVariable = (e) => {
   }
 };
 
-// class ----------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------
 
-class InfixEvaluator {
-  constructor(expression) {
-    this.expression = expression;
-    this.precedence = {
-      "(": 1,
-      ")": 1,
-      "+": 2,
-      "-": 2,
-      "*": 3,
-      "^": 4,
-    };
-  }
+const evalInfix = (expr) => {
+  const replacedExpression = replaceExpressions(expr);
+  console.log("replaced expression " + replacedExpression);
 
-  applyOperator(operators, operands) {
-    const operator = operators.pop();
-    const operand2 = operands.pop();
-    const operand1 = operands.pop();
+  const parsedValue = parse(replacedExpression);
+  console.log("parsed value " + parsedValue);
 
-    let result;
-    switch (operator) {
-      case "^":
-        result = Math.pow(operand1, operand2);
-        break;
-      case "*":
-        result = operand1 * operand2;
-        break;
-      case "/":
-        result = operand1 / operand2;
-        break;
-      case "+":
-        result = operand1 + operand2;
-        break;
-      case "-":
-        result = operand1 - operand2;
-        break;
-    }
+  const tokens = parsedValue.split(" ");
+  const operators = [];
+  const operands = [];
 
-    operands.push(result);
-  }
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
 
-  parse = () => {
-    // return this.expression.replace(
-    //   new RegExp(`[${["*", "-", "+", "/", "^"].join("")}]`, "g"),
-    //   (match) => ` ${match} `
-    // );
-
-    return this.expression.replace(/([\+\-\*\/\^])/g, " $1 ");
-  };
-
-  evaluate() {
-    this.expression = this.replaceExpressions();
-    this.expression = this.parse();
-    console.log("parse expression", this.expression);
-
-    const tokens = this.expression.split(" ");
-    const operators = [];
-    const operands = [];
-
-    tokens.forEach((token) => {
-      if (!isNaN(parseFloat(token))) {
-        operands.push(parseFloat(token));
-      } else if (this.precedence[token]) {
-        while (
-          operators.length > 0 &&
-          operators[operators.length - 1] !== "(" &&
-          this.precedence[operators[operators.length - 1]] >=
-            this.precedence[token]
-        ) {
-          this.applyOperator(operators, operands);
-        }
-        operators.push(token);
-      } else if (token === "(") {
-        operators.push(token);
-      } else if (token === ")") {
-        while (
-          operators.length > 0 &&
-          operators[operators.length - 1] !== "("
-        ) {
-          this.applyOperator(operators, operands);
-        }
-        operators.pop(); // Discard the "("
+    if (!isNaN(parseFloat(token))) {
+      operands.push(parseFloat(token));
+    } else if (isOperator(token)) {
+      while (
+        operators.length > 0 &&
+        operators[operators.length - 1] !== "(" &&
+        precedence(operators[operators.length - 1]) >= precedence(token)
+      ) {
+        applyOperator(operators, operands);
       }
-    });
-
-    while (operators.length > 0) {
-      this.applyOperator(operators, operands);
+      operators.push(token);
+    } else if (token === "(") {
+      operators.push(token);
+    } else if (token === ")") {
+      while (operators.length > 0 && operators[operators.length - 1] !== "(") {
+        applyOperator(operators, operands);
+      }
+      operators.pop(); // Discard the "("
     }
-
-    return operands[0];
   }
 
-  replaceExpressions = () => {
-    const trigonometricPattern = /(sin|cos|tan)\(([^)]+)\)/g;
-    const squareRootPattern = /√\((\d+(?:\.\d+)?)\)/g;
+  while (operators.length > 0) {
+    applyOperator(operators, operands);
+  }
 
-    const replacedExpression = this.expression
-      .replace(trigonometricPattern, (match, func, angle) => {
-        const angleInDegrees = parseFloat(angle);
-        const angleInRadians = (angleInDegrees * Math.PI) / 180;
+  return operands[0];
+};
 
-        switch (func) {
-          case "sin":
-            return Math.sin(angleInRadians).toFixed(4);
-          case "cos":
-            return Math.cos(angleInRadians).toFixed(4);
-          case "tan":
-            return Math.tan(angleInRadians).toFixed(4);
-          default:
-            return match;
-        }
-      })
-      .replace(squareRootPattern, (match, num) => {
-        const evaluatedValue = Math.sqrt(parseFloat(num));
-        return evaluatedValue.toFixed(4);
-      })
-      .replaceAll("e", Math.E.toFixed(4))
-      .replaceAll("π", Math.PI.toFixed(4));
+const applyOperator = (operators, operands) => {
+  const operator = operators.pop();
+  const operand2 = operands.pop();
+  const operand1 = operands.pop();
 
-    return replacedExpression;
-  };
-}
+  let result;
+  switch (operator) {
+    case "+":
+      result = operand1 + operand2;
+      break;
+    case "-":
+      result = operand1 - operand2;
+      break;
+    case "*":
+      result = operand1 * operand2;
+      break;
+    case "/":
+      result = operand1 / operand2;
+      break;
+    case "^":
+      result = Math.pow(operand1, operand2);
+      break;
+  }
+
+  operands.push(result);
+};
+
+const isOperator = (token) => {
+  return ["+", "-", "*", "/", "^"].includes(token);
+};
+
+const precedence = (operator) => {
+  switch (operator) {
+    case "+":
+    case "-":
+      return 1;
+    case "*":
+    case "/":
+      return 2;
+    case "^":
+      return 3;
+    default:
+      return 0;
+  }
+};
+
+const replaceExpressions = (expression) => {
+  const trigonometricPattern = /(sin|cos|tan)\(([^)]+)\)/g;
+  const squareRootPattern = /√\((\d+(?:\.\d+)?)\)/g;
+
+  const replacedExpression = expression
+    .replace(trigonometricPattern, (match, func, angle) => {
+      console.log("angle", angle);
+      const angleInDegrees = parseFloat(angle);
+      const angleInRadians = (angleInDegrees * Math.PI) / 180;
+
+      switch (func) {
+        case "sin":
+          return Math.sin(angleInRadians).toFixed(4);
+        case "cos":
+          return Math.cos(angleInRadians).toFixed(4);
+        case "tan":
+          return Math.tan(angleInRadians).toFixed(4);
+        default:
+          return match;
+      }
+    })
+    .replace(squareRootPattern, (match, num) => {
+      const evaluatedValue = Math.sqrt(parseFloat(num));
+      return evaluatedValue.toFixed(4);
+    })
+    .replaceAll("e", Math.E.toFixed(4))
+    .replaceAll("π", Math.PI.toFixed(4))
+    .replaceAll(/\+-/g, "-");
+
+  return replacedExpression;
+};
+
+const parse = (expr) => expr.replace(/([\+\-\*\/\^\(\)])/g, " $1 ");
