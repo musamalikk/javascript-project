@@ -1,15 +1,10 @@
-const history = [];
-const variables = [];
+let history = [];
+let variables = [];
 
-setInterval(
-  () =>
-    (document.getElementById("time").innerHTML =
-      new Date().toLocaleTimeString()),
-  1000
-);
+setInterval(() => (document.getElementById("time").innerHTML = new Date().toLocaleTimeString()), 1000);
 
-const parenthesisCheck = (str) => {
-  const stack = [];
+const parenthesisCheck = str => {
+  let stack = [];
 
   for (const char of str) {
     if (char === "(") {
@@ -25,96 +20,10 @@ const parenthesisCheck = (str) => {
   return stack.length === 0;
 };
 
-const trigonometricCheck = (str) => {
-  let value = str;
-  if (str.includes("sin")) {
-    value = value.replaceAll("sin", "Math.sin");
-  }
+const historyListener = element => document.getElementById("present").value = element
+const variableListener = element => () => document.getElementById("present").value += element.value
 
-  if (str.includes("cos")) {
-    value = value.replaceAll("cos", "Math.cos");
-  }
-
-  if (str.includes("tan")) {
-    value = value.replaceAll("tan", "Math.tan");
-  }
-
-  return value;
-};
-
-const exponentCheck = (str) => {
-  let value = "";
-  if (str.includes("^")) {
-    value = str.replaceAll("^", "**");
-  }
-
-  if (value === "") {
-    return str;
-  }
-
-  return value;
-};
-
-const squareRootCheck = (str) => {
-  let value = "";
-  if (str.includes("√")) {
-    value = str.replaceAll("√", "Math.sqrt");
-  }
-
-  if (value === "") {
-    return str;
-  }
-
-  return value;
-};
-
-const exponentialConstantCheck = (str) => {
-  let value = "";
-  // if (str === "e") {
-  //   value = str.replaceAll("e", "Math.E");
-  // } else
-  if (str.includes("e")) {
-    value = str.replaceAll("e", "Math.E");
-  }
-
-  if (value === "") {
-    return str;
-  }
-
-  return value;
-};
-
-const pieCheck = (str) => {
-  let value = "";
-  // if (str === "π") {
-  //   value = str.replaceAll("π", "Math.PI");
-  // } else
-  if (str.includes("π")) {
-    value = str.replaceAll("π", "Math.PI");
-  }
-
-  if (value === "") {
-    return str;
-  }
-
-  return value;
-};
-
-const expressionChecks = (str) => {
-  return trigonometricCheck(
-    exponentCheck(squareRootCheck(exponentialConstantCheck(pieCheck(str))))
-  );
-};
-
-const historyListener = (element) => () => {
-  document.getElementById("present").value = element;
-};
-
-const variableListener = (element) => () => {
-  document.getElementById("present").value += element.value;
-};
-
-const historyRemoveListener = (element, container, li) => () => {
+const historyRemoveListener = (element, container, li) => {
   const index = history.indexOf(element);
   if (index > -1) {
     history.splice(index, 1);
@@ -124,37 +33,28 @@ const historyRemoveListener = (element, container, li) => () => {
 
 const populateHistory = () => {
   const container = document.getElementById("myArrayContainer");
-  container.innerHTML = ""; // Clear the existing content
+  container.innerHTML = "";
 
-  history.forEach((element) => {
+  history.forEach( element => {
     const li = document.createElement("li");
-    // li.textContent = element;
-    li.classList.add("list-item", "flex", "justify-start", "items-center");
-
     const p = document.createElement("p");
-    p.classList.add("mb-0");
-
     const span = document.createElement("span");
+
+    li.classList.add("list-item", "flex", "justify-start", "items-center");
+    p.classList.add("mb-0");
     span.classList.add("btn-close", "btn-sm", "text-danger", "ms-auto");
-
     p.textContent = element;
-    // span.textContent = "x";
-
     p.onclick = historyListener(element);
     span.onclick = historyRemoveListener(element, container, li);
-
     li.appendChild(p);
     li.appendChild(span);
-
     container.appendChild(li);
-
-    // console.log(history);
   });
 };
 
 const populateVariables = () => {
   const container = document.getElementById("variablesContainer");
-  container.innerHTML = ""; // Clear the existing content
+  container.innerHTML = "";
 
   variables.forEach((element) => {
     var li = document.createElement("li");
@@ -165,50 +65,24 @@ const populateVariables = () => {
   });
 };
 
-const addMultiplicationOperator = (expression) => {
-  // const regex = /(\d+|\))([a-zA-Z\(]|π|tan)|e(π)/g;
-  // expression.replace(regex, "$1*$2");
-
-  // const regex = /(\d+|\))([a-zA-Z\(]|tan)/g;
-  // return expression.replace(regex, "$1*$2");
-
-  const regex = /(?<=\d|\))(?=(?:sin|cos|tan)\()/g;
-  return expression.replace(regex, "*");
-
-  // const eRegex = /e(?!$|\*)/g;
-  // return expression.replace(eRegex, "e*");
-};
-
 populateHistory();
 populateVariables();
 
 const result = () => {
   const value = document.getElementById("present").value;
 
-  if (!parenthesisCheck(value)) {
-    return alert("Add Proper Parenthesis!");
-  }
-
+  if (!parenthesisCheck(value)) return alert("Add Proper Parenthesis!");
   if (value.includes("/0"))
     return alert("Arithmetic Exception: Division by 0 Error!");
-
   if (value.includes("//"))
     return alert(
       "Enter the Correct Expression, Operators cannot be repeated consectively!"
     );
-
   if (value.includes("√(-")) return alert("Iota √(-1) Exception!");
-
   if (!value) return alert("Kindly Enter Some Expression to Proceed!");
 
-  const newValue = value;
-  console.log("value " + newValue);
-  // console.log("new value " + newValue);
-
   try {
-    const resultValue = evalInfix(newValue);
-    console.log("eval value " + resultValue);
-
+    const resultValue = evalInfix(value);
     const end =
       Math.abs(resultValue) % 1 !== 0
         ? (eval(resultValue) / 1).toFixed(4)
@@ -216,11 +90,7 @@ const result = () => {
 
     document.getElementById("past").value = value;
     document.getElementById("present").value = end;
-
     history.push(value);
-    // console.log("history", history);
-    // console.log("variables", variables);
-
     populateHistory();
     populateVariables();
 
@@ -230,58 +100,40 @@ const result = () => {
   }
 };
 
-const addVariable = (e) => {
+const addVariable = e => {
   e.preventDefault();
   let exists = false;
+  let name = document.getElementById("variableName").value;
+  let value = document.getElementById("variableValue").value;
 
-  try {
-    let name = document.getElementById("variableName").value;
-    let value = document.getElementById("variableValue").value;
+  variables.forEach(element => {
+    if (element.name === name) {
+      exists = true;
+    }
+  });
 
-    variables.forEach((element) => {
-      if (element.name === name) {
-        exists = true;
-      }
+  if (exists) {
+    return alert("Variable Already Exists!");
+  } else {
+    variables.push({
+      name: name,
+      value: value,
     });
 
-    if (exists) {
-      return alert("Variable Already Exists!");
-    } else {
-      variables.push({
-        name: name,
-        value: value,
-      });
+    populateVariables();
 
-      populateVariables();
+    document.getElementById("variableName").value = "";
+    document.getElementById("variableValue").value = "";
 
-      // var modal = new bootstrap.Modal(
-      //   document.getElementById("addVariableModal")
-      // );
-      // modal.hide();
-
-      // console.log(name, value);
-      name = "";
-      value = "";
-
-      return alert("Variable has been added!");
-    }
-  } catch (error) {
-    console.log(error);
+    alert("Variable has been added!");
   }
 };
 
-// ----------------------------------------------------------------------------------------------------------
-
-const evalInfix = (expr) => {
+const evalInfix = expr => {
   const replacedExpression = replaceExpressions(expr);
-  console.log("replaced expression " + replacedExpression);
-
   const parsedValue = parse(replacedExpression);
-  console.log("parsed value " + parsedValue);
-
   const tokens = parsedValue.split(" ");
-  const operators = [];
-  const operands = [];
+  let operators = [], operands = [];
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
@@ -303,10 +155,9 @@ const evalInfix = (expr) => {
       while (operators.length > 0 && operators[operators.length - 1] !== "(") {
         applyOperator(operators, operands);
       }
-      operators.pop(); // Discard the "("
+      operators.pop();
     }
   }
-
   while (operators.length > 0) {
     applyOperator(operators, operands);
   }
@@ -341,10 +192,7 @@ const applyOperator = (operators, operands) => {
   operands.push(result);
 };
 
-const isOperator = (token) => {
-  return ["+", "-", "*", "/", "^"].includes(token);
-};
-
+const isOperator = token =>  ["+", "-", "*", "/", "^"].includes(token)
 const precedence = (operator) => {
   switch (operator) {
     case "+":
@@ -360,7 +208,7 @@ const precedence = (operator) => {
   }
 };
 
-const replaceExpressions = (expression) => {
+const replaceExpressions = expression => {
   const trigonometricPattern = /(sin|cos|tan)\(([^)]+)\)/g;
   const squareRootPattern = /√\((\d+(?:\.\d+)?)\)/g;
 
@@ -381,10 +229,7 @@ const replaceExpressions = (expression) => {
           return match;
       }
     })
-    .replace(squareRootPattern, (match, num) => {
-      const evaluatedValue = Math.sqrt(parseFloat(num));
-      return evaluatedValue.toFixed(4);
-    })
+    .replace(squareRootPattern, (match, num) => Math.sqrt(parseFloat(num)).toFixed(4))
     .replaceAll("e", Math.E.toFixed(4))
     .replaceAll("π", Math.PI.toFixed(4))
     .replaceAll(/\+-/g, "-");
