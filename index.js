@@ -19,11 +19,11 @@ const parenthesisCheck = str => {
 
   return stack.length === 0;
 };
-
 const historyListener = element => document.getElementById("present").value = element
-const variableListener = element => () => document.getElementById("present").value += element.value
 
-const historyRemoveListener = (element, container, li) => {
+const variableListener = element => document.getElementById("present").value += element.value
+
+const historyRemoveListener = (element, container, li) => () => {
   const index = history.indexOf(element);
   if (index > -1) {
     history.splice(index, 1);
@@ -35,7 +35,7 @@ const populateHistory = () => {
   const container = document.getElementById("myArrayContainer");
   container.innerHTML = "";
 
-  history.forEach( element => {
+  history.forEach((element) => {
     const li = document.createElement("li");
     const p = document.createElement("p");
     const span = document.createElement("span");
@@ -44,8 +44,9 @@ const populateHistory = () => {
     p.classList.add("mb-0");
     span.classList.add("btn-close", "btn-sm", "text-danger", "ms-auto");
     p.textContent = element;
-    p.onclick = historyListener(element);
-    span.onclick = historyRemoveListener(element, container, li);
+    p.onclick = historyListener.bind(element);
+    span.onclick = historyRemoveListener.bind(element, container, li);
+    
     li.appendChild(p);
     li.appendChild(span);
     container.appendChild(li);
@@ -138,29 +139,24 @@ const evalInfix = expr => {
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
 
-    if (!isNaN(parseFloat(token))) {
-      operands.push(parseFloat(token));
-    } else if (isOperator(token)) {
+    if (!isNaN(parseFloat(token))) 
+      operands.push(parseFloat(token)) 
+    else if (isOperator(token)) {
       while (
         operators.length > 0 &&
         operators[operators.length - 1] !== "(" &&
         precedence(operators[operators.length - 1]) >= precedence(token)
-      ) {
-        applyOperator(operators, operands);
-      }
+      ) applyOperator(operators, operands);
       operators.push(token);
-    } else if (token === "(") {
-      operators.push(token);
-    } else if (token === ")") {
+    } else if (token === "(") operators.push(token)
+     else if (token === ")") {
       while (operators.length > 0 && operators[operators.length - 1] !== "(") {
         applyOperator(operators, operands);
       }
       operators.pop();
     }
   }
-  while (operators.length > 0) {
-    applyOperator(operators, operands);
-  }
+  while (operators.length > 0) applyOperator(operators, operands)
 
   return operands[0];
 };
@@ -193,7 +189,7 @@ const applyOperator = (operators, operands) => {
 };
 
 const isOperator = token =>  ["+", "-", "*", "/", "^"].includes(token)
-const precedence = (operator) => {
+const precedence = operator => {
   switch (operator) {
     case "+":
     case "-":
@@ -212,9 +208,7 @@ const replaceExpressions = expression => {
   const trigonometricPattern = /(sin|cos|tan)\(([^)]+)\)/g;
   const squareRootPattern = /√\((\d+(?:\.\d+)?)\)/g;
 
-  const replacedExpression = expression
-    .replace(trigonometricPattern, (match, func, angle) => {
-      console.log("angle", angle);
+  const replacedExpression = expression.replace(trigonometricPattern, (match, func, angle) => {
       const angleInDegrees = parseFloat(angle);
       const angleInRadians = (angleInDegrees * Math.PI) / 180;
 
@@ -237,4 +231,4 @@ const replaceExpressions = expression => {
   return replacedExpression;
 };
 
-const parse = (expr) => expr.replace(/([\+\-\*\/\^\(\)])/g, " $1 ");
+const parse = expr => expr.replace(/([\+\-\*\/\^\(\)])/g, " $1 ");
