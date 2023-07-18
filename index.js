@@ -21,9 +21,12 @@ const parenthesisCheck = str => {
 };
 const historyListener = element => document.getElementById("present").value = element
 
-const variableListener = element => document.getElementById("present").value += element.value
+const variableListener = element => {
+  console.log("element",element)
+  document.getElementById("present").value += element
+}
 
-const historyRemoveListener = (element, container, li) => () => {
+const historyRemoveListener = (element, container, li) => {
   const index = history.indexOf(element);
   if (index > -1) {
     history.splice(index, 1);
@@ -44,9 +47,9 @@ const populateHistory = () => {
     p.classList.add("mb-0");
     span.classList.add("btn-close", "btn-sm", "text-danger", "ms-auto");
     p.textContent = element;
-    p.onclick = historyListener.bind(element);
-    span.onclick = historyRemoveListener.bind(element, container, li);
-    
+    p.addEventListener("click", () => historyListener(element))
+    span.addEventListener("click", () => historyRemoveListener(element, container, li))
+
     li.appendChild(p);
     li.appendChild(span);
     container.appendChild(li);
@@ -61,7 +64,7 @@ const populateVariables = () => {
     var li = document.createElement("li");
     li.textContent = element.name + "  -->  " + element.value;
     li.classList.add("list-item");
-    li.onclick = variableListener(element);
+    li.addEventListener("click", () => variableListener(element.value))
     container.appendChild(li);
   });
 };
